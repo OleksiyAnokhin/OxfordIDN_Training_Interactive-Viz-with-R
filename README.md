@@ -14,7 +14,7 @@ No prior knowledge of R is expected, the necessary "programming patterns" and wo
 
 # Working with these materials
 
-During the course you will need the materials in this repository ([https://github.com/ox-it/OxfordIDN-Training-Interactive-Viz-with-R](https://github.com/ox-it/OxfordIDN-Training-Interactive-Viz-with-R)).
+During the course you will need the materials in this repository ([https://github.com/ox-it/OxfordIDN-Training-Interactive-Viz-with-R](https://github.com/ox-it/OxfordIDN-Training-Interactive-Viz-with-R)). Here's a short URL [https://goo.gl/065SF8](https://goo.gl/065SF8).
 
 Click on "Clone or download" and select "Download as ZIP". Ensure to unzip the folders to a convenient location.
 
