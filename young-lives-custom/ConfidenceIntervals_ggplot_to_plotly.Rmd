@@ -1,0 +1,262 @@
+---
+title: "Confidence Intervals"
+output: slidy_presentation
+css: "www/teachingnotes.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The Goal
+
+You've asked how to build this type of visualisation:
+
+```{r, message=FALSE, warning=FALSE}
+library(plotly)
+x <- rnorm(100)
+y <-  + .7*x + rnorm(100)
+f1 <- as.factor(c(rep("A",50),rep("B",50)))
+f2 <- as.factor(rep(c(rep("C",25),rep("D",25)),2))
+df <- data.frame(cbind(x,y))
+df$f1 <- f1
+df$f2 <- f2
+{ggplot(df,aes(x=x,y=y)) +
+    geom_point() +
+    facet_grid(f1~f2) +
+    stat_smooth(method="lm") }%>%
+  ggplotly()
+```
+
+But first we need to be able to build this chart:
+
+```{r}
+library(ggplot2)
+x <- rnorm(100)
+y <-  + .7*x + rnorm(100)
+f1 <- as.factor(c(rep("A",50),rep("B",50)))
+f2 <- as.factor(rep(c(rep("C",25),rep("D",25)),2))
+df <- data.frame(cbind(x,y))
+df$f1 <- f1
+df$f2 <- f2
+ggplot(df,aes(x=x,y=y)) +
+    geom_point() +
+    stat_smooth(method="lm")
+```
+
+# Tools/Techniques we need
+
+- Importing Data
+- Setting Factors
+- ggplot2
+- facets in ggplot2
+- Making ggplot2 interactive with ggplotly
+
+# Importing Data
+
+```{r,echo=F,eval=F}
+df <- data.frame(
+  "metric1" = rnorm(100),
+  "metric2" = + .7*x + rnorm(100),
+  "category" = c(rep("Rural",50),rep("Urban",50)),
+  "country" = rep(c(rep("India",25),rep("Vietnam",25)),2)
+)
+library(xlsx)
+write.xlsx2(file = "data/confidence-data.xlsx", x = df,row.names = F)
+```
+
+The data for this example is stored within an .xlsx file, which can be imported directly using the `xlsx` library. However:
+
+<div class="incremental">
+- The `xlsx` library depends on a specific version of Java being installed and set as an appropriate PATH variable.
+
+- It is tremendously slow.
+
+```{r, echo=T}
+library(xlsx)
+confidence_data <- read.xlsx2("data/confidence-data.xlsx", sheetIndex = 1)
+```
+
+- It's also quite dumb
+
+```{r}
+str(confidence_data)
+```
+
+</div>
+
+# xlsx_convert_import
+
+My personal recommendation is to import as .xlsx and export to csv, it makes data processing much simpler. This utility function provides a simple way to achieve this:
+
+```{r, echo=T}
+xlsx_convert_import <- function(inputFile = NA, outputFile = NA){
+  if(file.exists(outputFile)){
+    imported_data <<- read_csv(outputFile)
+  } else {
+    library(xlsx)
+    xlsx_import <- read.xlsx2(inputFile, sheetIndex = 1)
+    write.csv(xlsx_import, file = outputFile, row.names = FALSE)
+    imported_data <<- read_csv(outputFile)
+  }
+}
+```
+
+Note that the function uses the `read_csv` function from `readr`:
+
+```{r}
+library(readr)
+confidence_data <- xlsx_convert_import(inputFile = "data/confidence-data.xlsx", outputFile = "data/confidence-data.csv")
+str(confidence_data)
+```
+
+# ggplot2
+
+The `ggplot2` provides us a complete "grammar of graphics", a consistent methodology for building and adding to charts (as well as maps and network diagrams!).
+
+Documentation for `ggplot2` is available here [http://docs.ggplot2.org/current/](http://docs.ggplot2.org/current/) and there is also a great cheat sheet available under Help in the menubar.
+
+# ggplot and aes
+
+The workhorses of a `ggplot2` plot are as follows:
+
+- `ggplot(data = df, ...)` initiates a ggplot object with `df` as the `data` to be used within the object.
+
+- `aes` specifies the "aesthetic mappings" for how variables in the `data` are mapped to visual properties of the object
+
+We can therefore create an empty chart as follows:
+
+```{r, echo=T}
+ggplot(confidence_data ,aes(x = metric1, y = metric2))
+```
+
+# Adding layers
+
+To include additional visual elements to the chart, add "layers" with the `+` operator:
+
+```{r, echo=T}
+ggplot(confidence_data ,aes(x = metric1, y = metric2)) +
+  ggtitle("Regressing metric 1 on metric 2")
+```
+
+Often users choose to make intermediatry assignments in building their charts:
+
+```{r, echo=T}
+regress_chart <- ggplot(confidence_data ,aes(x = metric1, y = metric2)) +
+  ggtitle("Regressing metric 1 on metric 2")
+
+
+regress_chart + xlab("some metric")
+```
+
+
+# geoms
+
+Geoms are used to add visual features to a chart, using the `aes` mappings between data variables and the chart's coordinate system:
+
+```{r, echo=T}
+regress_chart <- ggplot(confidence_data ,aes(x = metric1, y = metric2)) +
+  ggtitle("Regressing metric 1 on metric 2")
+
+regress_chart + geom_point()
+```
+
+Regression and associated confidence levels can easily be plotted together using the `stat_smooth` function:
+
+```{r}
+regress_chart + geom_point() + stat_smooth(method="lm")
+```
+
+# Where is that model?
+
+The models used by `stat_smooth` are accessible directly using `loess` (the automatically chosen fitting method for small datasets)
+
+```{r}
+confidence_loess_model <- loess(metric2 ~ metric1, confidence_data)
+```
+
+Models have many properties, as with most objects these can be listed with `names`
+
+```{r}
+names(confidence_loess_model) 
+```
+
+What about real models? loess is for exploring relations
+
+# lm
+
+All models use the same syntax, so to compute a linear model use:
+
+```{r}
+confidence_lm_model <- lm(metric2 ~ metric1, confidence_data)
+```
+
+Frustratingly, the properties of the model that you might assume to live in the object aren't there! Where is the RSquared?
+
+```{r}
+names(confidence_lm_model)
+```
+
+
+<div class="incremental">
+
+To generate the R squared value, and other useful properties, you must use `summary` and extract from that object
+
+```{r}
+lm_model_summary <- summary(confidence_lm_model)
+lm_model_summary$adj.r.squared
+```
+</div>
+
+# Back to ggplot and plotly
+
+The `plotly` library allows us to convert "simple" `ggplot` objects directly into interactive charts:
+
+```{r}
+library(plotly)
+regress_chart <- ggplot(confidence_data ,aes(x = metric1, y = metric2)) +
+  ggtitle("Regressing metric 1 on metric 2")
+
+ggplotly(regress_chart + geom_point() + stat_smooth(method="lm"))
+```
+
+# Faceting charts
+
+The dataset we're looking at has a number of different facets, it's useful to be able to split our chart by these.
+
+In order to do that, we need to provide `ggplot` with a `factor` variable:
+
+```{r}
+confidence_data$country <- as.factor(confidence_data$country)
+confidence_data$category <- as.factor(confidence_data$category)
+```
+
+<div class="incremental">
+
+`facet_grid` allows a chart to be split according to a factor(s):
+
+- `facet_grid(. ~country)` will facet only on country by column
+
+```{r}
+regress_chart + facet_grid(. ~country) + geom_point() + stat_smooth(method="lm")
+```
+
+- `facet_grid(. ~country)` will facet on country by row
+
+```{r}
+regress_chart + facet_grid(country ~ .) + geom_point() + stat_smooth(method="lm")
+```
+
+- `facet_grid(country ~ category)` will facet on country and country
+
+```{r}
+regress_chart + facet_grid(country ~ category) + geom_point() + stat_smooth(method="lm")
+```
+
+- `ggplotly` will happily gobble up all of these
+
+```{r}
+ggplotly(regress_chart + facet_grid(country ~ category) + geom_point() + stat_smooth(method="lm"))
+```
+
+</div>

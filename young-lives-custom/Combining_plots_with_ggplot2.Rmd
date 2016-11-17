@@ -1,0 +1,134 @@
+---
+title: "Combining Plots with ggplot2"
+output: slidy_presentation
+css: "www/teachingnotes.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+# ggplot2 is very flexible
+
+`ggplot2` is flexible, but fussy. It really wants to be told what to do, and it takes instructions through factors and groups.
+
+As an example, let's make this chart.
+
+```{r, echo=FALSE}
+data_multi_chart <- data.frame(
+  label = c("Left", "Right", "Both", "Neither", "Zine"),
+  bar = c(1,8,9,10,5),
+  points = c(1.3, 7.8, 9.2, 10.3, NA)
+)
+library(ggplot2)
+ggplot(data = data_multi_chart, aes(x = label, group = 1)) + 
+  geom_bar(aes(y = bar, fill = label), stat = "identity") +
+  geom_point(aes(y = points, color = "Expectation")) +
+  stat_summary(geom="line", aes(y = points)) +
+  xlab("") + ylab("") + ggtitle("Bars, points and line") + 
+  scale_color_manual(name = "", values="1")
+```
+
+# Bar Chart
+
+We're going to use this data set:
+
+```{r}
+data_multi_chart <- data.frame(
+  label = c("Left", "Right", "Both", "Neither", "Zine"),
+  bar = c(1,8,9,10,5),
+  points = c(1.3, 7.8, 9.2, 10.3, NA)
+)
+```
+
+<div class="incremental"
+A bar plot can be constructed simply as follows:
+
+```{r}
+ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
+  geom_bar(stat = "identity")
+```
+
+Colour can be added through the aesthetic `fill`, we will add the colour to the specific `geom_` we wish to target so that other geoms are not coloured as well
+
+```{r}
+ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
+  geom_bar(aes(fill = label), stat = "identity")
+```
+</div>
+
+# Adding Points
+
+Individual geoms can be given their own aesthetic mappings:
+
+```{r}
+ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
+  geom_bar(aes(fill = label), stat = "identity") + 
+  geom_point(aes(y = points)) 
+```
+
+# Adding Lines
+
+Up till now everything has been easy, but the easiest way to add lines between the `geom_points` requires us to use `stat_summary`
+
+```{r, message=TRUE, warning=TRUE}
+ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
+  geom_bar(aes(fill = label), stat = "identity") + 
+  geom_point(aes(y = points)) + 
+  stat_summary(geom="line", aes(y = points))
+```
+
+<div class="incremental">
+
+The aesthetic `group` allows modelling geoms to decide how to collate points, typically by a column of the data.frame.
+
+In our case, we want all `geom_point`s to be considered in the same group:
+
+```{r}
+ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
+  geom_bar(aes(fill = label), stat = "identity") + 
+  geom_point(aes(y = points)) + 
+  stat_summary(geom="line", aes(y = points, group = 1))
+```
+
+</div>
+
+# Adding the legend
+
+Legends (or guides) in ggplot2 can be slightly more frustrating than ideal.
+
+To get a legend entry we need two things:
+
+- The `geom_point` geom must have a color or fill
+
+- An appropriate `scale_*_manual` must be added for the color or fill
+
+The following works quite nicely:
+
+```{r}
+ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
+  geom_bar(aes(fill = label), stat = "identity") + 
+  geom_point(aes(y = points, color = "Expectation")) + 
+  stat_summary(geom="line", aes(y = points, group = 1)) +
+  scale_color_manual(name = "Foobar", values="1")
+```
+
+# How about making that with ggplotly?
+
+This comes under the "that's a little custom, it doesn't work - try native plotly"
+
+```{r}
+library(plotly)
+ggplotly(
+ggplot(data = data_multi_chart, aes(x = label, group = 1)) + 
+  geom_bar(aes(y = bar, fill = label), stat = "identity") +
+  geom_point(aes(y = points, color = "Expectation")) +
+  stat_summary(geom="line", aes(y = points)) +
+  xlab("") + ylab("") + ggtitle("Bars, points and line") + 
+  scale_color_manual(name = "", values="4"))
+```
+

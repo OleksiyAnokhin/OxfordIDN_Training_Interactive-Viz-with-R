@@ -1,0 +1,140 @@
+---
+title: "Stata Import"
+output: slidy_presentation
+runtime: shiny
+css: "www/teachingnotes.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Importing Data in RStudio
+
+Importing data in RStudio is much easier if you work in projects, which is discussed in the main body of the training materials (/Development/Lecturer-Notes/RMarkdown.Rmd).
+
+This is because projects set the working directory to the directory containing the .RProj file, and all paths can be made relevant to that.
+
+In this project folder there is a directory called data, which may be accessed using:
+
+```{r, eval=FALSE}
+list.files("data")
+```
+
+# .dta files
+
+There are two libraries for importing .dta libraries:
+
+- `library(foreign)` can only be used for importing .dta from Stata v12 and earlier
+
+- `library(readstata13)` can be used to import current generation .dta files
+
+# Example File
+
+There are a multitude of example data files here: http://www.stata-press.com/data/r14.
+
+For quickness I tried to get the Iris fish dataset but ended up with a different fishy dataset, this can easily be imported as follows:
+
+```{r}
+library(readstata13)
+fish_dta <- read.dta13("data/fish.dta")
+```
+
+To better understand this data structure, use `class` and `str`
+
+```{r,echo=FALSE, eval=F}
+str(fish_dta)
+```
+
+# What is that thing?
+
+The `read.dta13` function imports the .dta file as a `data.frame` with attributes. 
+
+Most `data.frame` don't have attributes, because they only contain data; but .dta files also contain information about the dataset.
+
+- Accessing the data is the same as for all `data.frame`
+- The attributes are accessible through dedicated functions.
+
+# Attributes
+
+Return all of an object's attributes with `attributes`:
+
+```{r, eval=F}
+attributes(fish_dta)
+```
+
+
+Individual attributes can be accessed as follows:
+
+```{r, eval=F}
+attr(fish_dta, "formats")
+```
+
+
+Programmatically extract all attribute names as follows:
+
+```{r, eval=F}
+names(attributes(fish_dta))
+```
+
+# Data.frames
+
+There are two approaches to extracting data from data.frames:
+
+- Base R: Extract columns and rows directly from the `data.frame` object
+
+<div class="incremental">
+```{r, eval = F}
+fish_dta$
+```
+
+```{r, eval = F}
+fish_dta[1, ]
+```
+
+```{r, eval = F}
+fish_dta[, 1]
+```
+</div>
+
+- dplyr: `dplyr` is the data filtering and processing library from tidyverse, and makes many operations simpler than they would be using base R 
+
+<div class="incremental"> 
+
+```{r, eval = F}
+fish_dta %>%
+  select(camper, persons)
+```
+
+```{r, eval = F}
+fish_dta %>%
+  select(-camper)
+```
+
+</div>
+
+# Filtering Data
+
+Filtering data with `dplyr` is very simple:
+
+```{r, eval = F}
+fish_dta %>%
+  select(-nofish) %>%
+  filter(xb > -0.8 &
+           persons == 1)
+```
+
+# How about extracting columns by strings?
+
+In shiny it is important to remember that `input$variables` are typically strings, it is therefore necessary to be able to use `dplyr` with strings for column names.
+
+This is simply achieved by appending a `_` to every function you use:
+
+```{r, eval = F}
+fish_dta %>%
+  select_("-nofish") %>%
+  filter_("xb" > -0.8 &
+           "persons" == 1)
+```
+
+The "default" `dplyr` functions rely on non-standard evaluation to access column names, if you wish to read more about this do watch out for dragons.
