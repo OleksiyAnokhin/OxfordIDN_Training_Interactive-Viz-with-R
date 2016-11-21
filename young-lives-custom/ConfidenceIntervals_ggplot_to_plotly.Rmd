@@ -61,8 +61,9 @@ df <- data.frame(
   "category" = c(rep("Rural",50),rep("Urban",50)),
   "country" = rep(c(rep("India",25),rep("Vietnam",25)),2)
 )
+df
 library(xlsx)
-write.xlsx2(file = "data/confidence-data.xlsx", x = df,row.names = F)
+write.xlsx2(file = "data/confidence-data.xlsx", x = df, row.names = F)
 ```
 
 The data for this example is stored within an .xlsx file, which can be imported directly using the `xlsx` library. However:
@@ -127,7 +128,7 @@ The workhorses of a `ggplot2` plot are as follows:
 We can therefore create an empty chart as follows:
 
 ```{r, echo=T}
-ggplot(confidence_data ,aes(x = metric1, y = metric2))
+ggplot(confidence_data, aes(x = metric1, y = metric2))
 ```
 
 # Adding layers
@@ -179,6 +180,7 @@ Models have many properties, as with most objects these can be listed with `name
 
 ```{r}
 names(confidence_loess_model) 
+confidence_loess_model$residuals
 ```
 
 What about real models? loess is for exploring relations
@@ -204,6 +206,7 @@ To generate the R squared value, and other useful properties, you must use `summ
 
 ```{r}
 lm_model_summary <- summary(confidence_lm_model)
+lm_model_summary
 lm_model_summary$adj.r.squared
 ```
 </div>
@@ -229,6 +232,10 @@ In order to do that, we need to provide `ggplot` with a `factor` variable:
 ```{r}
 confidence_data$country <- as.factor(confidence_data$country)
 confidence_data$category <- as.factor(confidence_data$category)
+
+confidence_data$country
+factor(c("a","b","a","a"), levels = c("b", "a"))
+
 ```
 
 <div class="incremental">
@@ -250,7 +257,7 @@ regress_chart + facet_grid(country ~ .) + geom_point() + stat_smooth(method="lm"
 - `facet_grid(country ~ category)` will facet on country and country
 
 ```{r}
-regress_chart + facet_grid(country ~ category) + geom_point() + stat_smooth(method="lm")
+regress_chart + facet_grid(country ~ category) + geom_point() + stat_smooth(method="lm")l
 ```
 
 - `ggplotly` will happily gobble up all of these

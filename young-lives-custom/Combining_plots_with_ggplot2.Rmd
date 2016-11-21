@@ -50,7 +50,13 @@ A bar plot can be constructed simply as follows:
 
 ```{r}
 ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
-  geom_bar(stat = "identity")
+  geom_bar(stat = "identity") # this makes labeled bar chart
+
+ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
+  geom_bar(stat = "identity") + coord_flip()
+
+ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
+  geom_bar()
 ```
 
 Colour can be added through the aesthetic `fill`, we will add the colour to the specific `geom_` we wish to target so that other geoms are not coloured as well
@@ -58,6 +64,9 @@ Colour can be added through the aesthetic `fill`, we will add the colour to the 
 ```{r}
 ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
   geom_bar(aes(fill = label), stat = "identity")
+
+ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
+  geom_bar(aes(color = label), stat = "identity")
 ```
 </div>
 
@@ -69,6 +78,8 @@ Individual geoms can be given their own aesthetic mappings:
 ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
   geom_bar(aes(fill = label), stat = "identity") + 
   geom_point(aes(y = points)) 
+
+data_multi_chart
 ```
 
 # Adding Lines
@@ -113,8 +124,10 @@ The following works quite nicely:
 ggplot(data = data_multi_chart, aes(x = label, y = bar)) + 
   geom_bar(aes(fill = label), stat = "identity") + 
   geom_point(aes(y = points, color = "Expectation")) + 
+  geom_point(aes(y = bar, color = "Other")) +
   stat_summary(geom="line", aes(y = points, group = 1)) +
-  scale_color_manual(name = "Foobar", values="1")
+  scale_color_manual(name = "", values = c("1","2")) +
+  xlab("x label") + ylab("IT'LL BE YUGGGGE") + coord_flip()
 ```
 
 # How about making that with ggplotly?

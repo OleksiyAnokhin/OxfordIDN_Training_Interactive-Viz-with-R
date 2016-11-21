@@ -1,7 +1,6 @@
 ---
 title: "Stata Import"
 output: slidy_presentation
-runtime: shiny
 css: "www/teachingnotes.css"
 ---
 
@@ -61,6 +60,16 @@ Return all of an object's attributes with `attributes`:
 
 ```{r, eval=F}
 attributes(fish_dta)
+my_named_list <- list(
+  "thing 1" = 2,
+  "deep thing 1" = list(
+    "a" = 1,
+    "b"
+  ),
+  "thing 2" = "martin"
+)
+my_named_list$`thing 1`
+str(my_named_list)
 ```
 
 
@@ -85,11 +94,14 @@ There are two approaches to extracting data from data.frames:
 
 <div class="incremental">
 ```{r, eval = F}
-fish_dta$
+fish_dta$nofish
+sum(fish_dta$nofish)
 ```
 
 ```{r, eval = F}
-fish_dta[1, ]
+fish_dta[1:5, ]
+fish_dta$nofish > 0
+fish_dta[fish_dta$nofish > 0 & fish_dta$livebait == 0, ]
 ```
 
 ```{r, eval = F}
@@ -102,13 +114,14 @@ fish_dta[, 1]
 <div class="incremental"> 
 
 ```{r, eval = F}
+library(tidyverse)
 fish_dta %>%
   select(camper, persons)
 ```
 
 ```{r, eval = F}
-fish_dta %>%
-  select(-camper)
+fish_dta <- {fish_dta %>%
+  select(-camper)}
 ```
 
 </div>
