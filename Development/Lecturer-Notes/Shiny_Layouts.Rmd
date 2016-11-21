@@ -315,5 +315,5 @@ It would be remiss of me not to mention the `flexdashboard` library that is desi
 
 <center><a href="http://rmarkdown.rstudio.com/flexdashboard/index.html"><img src="images/flexdashboard.png" width = "100%" alt = Beamer/></a></center>
 
-## Exercises (10mins)
+# Exercises (10mins)
 
