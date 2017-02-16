@@ -20,3 +20,7 @@ Click on "Clone or download" and select "Download as ZIP". Ensure to unzip the f
 
 
 <img src="/download-repo.png" width="400">
+
+# License
+
+CC BY-NC 4.0
